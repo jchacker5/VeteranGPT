@@ -1,5 +1,5 @@
-from langchain import OpenAI, LLMChain, PromptTemplate 
-from langchain import ConversationBufferMemory
+from langchain import OpenAI, ConversationChain, LLMChain, PromptTemplate
+from langchain.memory import ConversationBufferMemory
 from dotenv import find_dotenv, load_dotenv
 from elevenlabs import generate, play
 from playsound import playsound
