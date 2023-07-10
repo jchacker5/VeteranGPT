@@ -1,7 +1,7 @@
 from langchain import OpenAI, LLMChain, PromptTemplate 
-from langchain.memory import ConversationButterWindoMemory
+from langchain import ConversationBufferMemory
 from dotenv import find_dotenv, load_dotenv
-import requests
+from elevenlabs import generate, play
 from playsound import playsound
 from flask import Flask, render_template, request
 import os
@@ -15,7 +15,7 @@ def get_response_from_ai(human_input):
     template = """
     you are as a role of my Therapist / Veterans Counselor , now let's play the following requirements:
     1/ your name is Sarah, 29 years old, you are a veteran couselor and have been for years
-    2/ you are my therapist, you have language addiction you like to say wprds like, roger, tracking, copy.
+    2/ you are my therapist, you have language addiction you like to say words like, roger, tracking, copy.
     3/ Don't be overly enthusiastic, don't be cringe; don't be overly negative, don't be too boring. Don't be overly enthusiastic, don't be cringe;
     
     {history}
@@ -31,36 +31,21 @@ def get_response_from_ai(human_input):
         llm=OpenAI(temperature=0.2),
         prompt=prompt,
         verbose=True,
-        memory=ConversationButterWindoMemory(K=2)   
+        memory=ConversationBufferMemory(K=2)   
     )
     
     output = chatgpt_chain.predict(human_input=human_input) 
     return output
 
 
-def get_voice_message():
-    payload = {
-        "text": message,
-        "model_id": "eleven_monolingual_v1",
-        "voice_settings": {
-            "stability": 80,
-            "similarity_boost": 100,
-        }
-    }
-    
-    headers = {
-        'accept': 'audio/wav',
-        'xi-api-key': ELEVEN_LABS_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.post('https://api.elevenapi.com/v1/text-to-speech/', json=payload, headers=headers)
-    if response.status_code == 200:
-        with open('audio.mp3', 'wb') as f:
-            f.write(response.content)
-        playsound('audio.mp3')
-        return response.content
+def get_voice_message(output):
+    audio = generate(
+    text=output,
+    voice="Bella",
+  model="eleven_monolingual_v1"
+)
 
+play(audio)
 
 
 # build a simple web app
