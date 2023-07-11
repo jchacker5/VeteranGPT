@@ -10,9 +10,11 @@
         <button type="submit">Send</button>
     </form>
     <div id="response_message"></div>
+
     <script>
     const form = document.querySelector('form');
     const responseMessage = document.getElementById('response_message');
+    
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(form);
@@ -22,9 +24,9 @@
         })
         .then(response => response.text())
         .then(data => {
-            responseMessage.innerHTML = data;
-            form.reset();
+            responseMessage.innerHTML = data;            
         });
+        form.reset();
     });
     </script>
 </body>

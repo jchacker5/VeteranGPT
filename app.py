@@ -4,6 +4,7 @@ from dotenv import find_dotenv, load_dotenv
 from elevenlabs import generate, play
 from playsound import playsound
 from flask import Flask, render_template, request
+import requests
 import os
 
 
@@ -19,12 +20,12 @@ def get_response_from_ai(human_input):
     3/ Don't be overly enthusiastic, don't be cringe; don't be overly negative, don't be too boring. Don't be overly enthusiastic, don't be cringe;
     
     {history}
-    Boyfriend: (human_input)
+    Veteran: {human_input}
     Therapist: 
     """
     prompt = PromptTemplate(
         input_variables={"history", "human_input"},
-        template=template
+        template = template
     )
     
     chatgpt_chain = LLMChain(
@@ -38,30 +39,31 @@ def get_response_from_ai(human_input):
     return output
 
 
-def get_voice_message(output):
-    audio = generate(
-    text=output,
-    voice="Bella",
-  model="eleven_monolingual_v1"
-)
+def get_voice_message(message):
+    payload = {
+        "text": message,
+        "model_id": "eleven_monolingual_v1",
+        "voice settings": {
+            "stability": 0.5,
+            "similarity boost": 0 
+        }
+    }
+    
+    headers = {
+        'accept': 'audio/mpeg',
+        'xi-api-key': ELEVEN_LABS_API_KEY,
+        'Content-Type': 'application/json'
+    }
 
-play(audio)
+    response = requests.post('https://api.elevenapi.com/v1/text-to-speech/{nkN94lMiMfyppJHMLsL8}', json=payload, headers=headers)
+    if response.status_code == 200:
+        with open('audio.mp3', 'wb') as f:
+            f.write(response.content)
+        playsound('audio.mp3')
+        return response.content
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 # build a simple web app
 
 app = Flask(__name__)
@@ -72,9 +74,10 @@ def home():
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
-    human_input = request.form['human_input']
-    message = get_response_from_ai(human_input)
+    human_input=request.form['human_input']
+    message = get_response_from_ai(human_input=human_input)
+    get_voice_message(message)
     return message
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)   
