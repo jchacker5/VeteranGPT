@@ -3,14 +3,14 @@ from langchain.memory import ConversationBufferMemory
 from dotenv import find_dotenv, load_dotenv
 from elevenlabs import generate, play
 from playsound import playsound
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 import os
 
 
 load_dotenv(find_dotenv())
 ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
-
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
 def get_response_from_ai(human_input):
     template = """
@@ -59,7 +59,6 @@ def get_voice_message(message):
     if response.status_code == 200:
         with open('audio.mp3', 'wb') as f:
             f.write(response.content)
-        playsound('audio.mp3')
         return response.content
 
 
@@ -75,9 +74,12 @@ def home():
 @app.route('/send_message', methods=['POST'])
 def send_message():
     human_input=request.form['human_input']
-    message = get_response_from_ai(human_input=human_input)
-    get_voice_message(message)
-    return message
+    try:
+        message = get_response_from_ai(human_input=human_input)
+        audio = get_voice_message(message)
+        return jsonify({'message': message, 'audio': audio})
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 if __name__ == "__main__":
     app.run(debug=True)   
