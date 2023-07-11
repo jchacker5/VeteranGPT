@@ -55,7 +55,7 @@ def get_voice_message(message):
         'Content-Type': 'application/json'
     }
 
-    response = requests.post('https://api.elevenapi.com/v1/text-to-speech/{nkN94lMiMfyppJHMLsL8}', json=payload, headers=headers)
+    response = requests.post('https://api.elevenlabs.io/v1/text-to-speech/{nkN94lMiMfyppJHMLsL8}', json=payload, headers=headers)
     if response.status_code == 200:
         with open('audio.mp3', 'wb') as f:
             f.write(response.content)
@@ -74,12 +74,9 @@ def home():
 @app.route('/send_message', methods=['POST'])
 def send_message():
     human_input=request.form['human_input']
-    try:
-        message = get_response_from_ai(human_input=human_input)
-        audio = get_voice_message(message)
-        return jsonify({'message': message, 'audio': audio})
-    except Exception as e:
-        return jsonify({'error': str(e)})
+    message = get_response_from_ai(human_input)
+    get_voice_message(message)
+    return  message
 
 if __name__ == "__main__":
     app.run(debug=True)   
